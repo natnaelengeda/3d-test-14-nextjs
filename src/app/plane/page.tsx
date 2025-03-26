@@ -11,6 +11,7 @@ import { AlertCircle, WrenchIcon, ThermometerIcon, Gauge } from "lucide-react"
 
 // Plane // 3D Model
 import PlaneLowPoly from "../../../public/PlaneLowPoly";
+import LoadingScreen from "@/components/LoadingScreen"
 // Define maintenance points with more detailed information
 const maintenancePoints = [
   {
@@ -152,16 +153,14 @@ function StatusIndicator({ position, label, onClick, isSelected }: IStatusIndica
       </group>
 
       {/* HTML label that appears on hover or when selected */}
-      {(isSelected) && (
-        <Html
-          position={[0, 0.6, 0]} center distanceFactor={10}>
-          <Badge
-            onClick={onClick}
-            className={`whitespace-nowrap shadow-lg ${isSelected ? "bg-white text-sky-500 border border-sky-500 hover:bg-white" : "bg-sky-500 hover:bg-sky-600"}   text-[8px] cursor-pointer`}>
-            <span onClick={onClick}>{label}</span>
-          </Badge>
-        </Html>
-      )}
+      <Html
+        position={[0, 0.6, 0]} center distanceFactor={10}>
+        <Badge
+          onClick={onClick}
+          className={`whitespace-nowrap shadow-lg ${isSelected ? "bg-white text-sky-500 border border-sky-500 hover:bg-white" : "bg-sky-500 hover:bg-sky-600"}   text-[8px] cursor-pointer`}>
+          <span onClick={onClick}>{label}</span>
+        </Badge>
+      </Html>
     </group>
   )
 }
@@ -169,10 +168,11 @@ function StatusIndicator({ position, label, onClick, isSelected }: IStatusIndica
 interface IAirplane {
   onSelectPoint: any;
   selectedPoint: any;
+  setIsLoaidng: any;
 }
 
 // Simple airplane model
-function Airplane({ onSelectPoint, selectedPoint }: IAirplane) {
+function Airplane({ onSelectPoint, selectedPoint, setIsLoaidng }: IAirplane) {
   const groupRef = useRef<any>()
   const scale = 0.1;
 
@@ -190,9 +190,7 @@ function Airplane({ onSelectPoint, selectedPoint }: IAirplane) {
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
         scale={[scale, scale, scale]}
-      // Tilted slightly up and rotated 180°
-      // onLoad={() => setIsLoading(false)}
-      />
+        onLoad={() => setIsLoaidng(false)} />
 
       {/* Status indicators */}
       {
@@ -212,6 +210,7 @@ function Airplane({ onSelectPoint, selectedPoint }: IAirplane) {
 export default function Page() {
   const [selectedPoint, setSelectedPoint] = useState<any>(null)
   const [activeTab, setActiveTab] = useState("overview")
+  const [isLoading, setIsLoaidng] = useState<boolean>(true);
 
   const handleSelectPoint = (point: any) => {
     setSelectedPoint(point)
@@ -226,14 +225,18 @@ export default function Page() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* 3D Viewer */}
-        <div className="flex-1 relative">
+        <div
+          style={{
+            // display: isLoading ? "none" : "flex"
+          }}
+          className="flex-1 relative">
           <Canvas>
             {/* <PerspectiveCamera makeDefault position={[0, 2, 6]} /> */}
             <PerspectiveCamera makeDefault position={[-10, 10, 10]} />
             <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} minDistance={4} maxDistance={10} />
             <ambientLight intensity={0.5} />
             <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-            <Airplane onSelectPoint={handleSelectPoint} selectedPoint={selectedPoint} />
+            <Airplane onSelectPoint={handleSelectPoint} selectedPoint={selectedPoint} setIsLoaidng={setIsLoaidng} />
 
             {/* Grid and environment */}
             <gridHelper args={[20, 20, "#4338ca", "#1e3a8a"]} position={[0, -1, 0]} />
@@ -251,6 +254,11 @@ export default function Page() {
             </Badge>
           </div>
         </div>
+
+        {
+          false &&
+          <LoadingScreen />
+        }
 
         {/* Info Panel */}
         <div className="w-96 border-l border-slate-800 overflow-y-auto">
